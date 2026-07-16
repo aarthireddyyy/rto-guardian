@@ -3,13 +3,34 @@ import os
 import joblib
 import numpy as np
 from fastapi import FastAPI, HTTPException
-from app.models.schemas import OrderInput, RiskOutput
+from app.models.schemas import (
+    OrderInput, 
+    RiskOutput, 
+    OrderState, 
+    ProcessOrderRequest, 
+    ProcessOrderResponse
+)
+from app.agents.orchestrator import orchestrator
+from app.agents.rescore import rescore
 import uvicorn
 
-app = FastAPI(title="RTO Risk Scoring API")
+app = FastAPI(title="RTO Risk Scoring & Agent Orchestrator API")
 
-# Global variable to hold the loaded artifacts
+# Global variable to hold the loaded ML artifacts
 artifact = None
+
+# In-memory storage repository abstraction
+orders_db: dict[str, OrderState] = {}
+
+def get_order_state(order_id: str) -> OrderState:
+    """Retrieve the current state of an order from storage."""
+    if order_id not in orders_db:
+        raise HTTPException(status_code=404, detail="Order not found")
+    return orders_db[order_id]
+
+def save_order_state(order_id: str, state: OrderState):
+    """Save the updated state of an order to storage."""
+    orders_db[order_id] = state
 
 @app.on_event("startup")
 def load_model():
@@ -71,6 +92,79 @@ def predict_risk(order: OrderInput):
         should_approve=should_approve,
         intervention=intervention
     )
+
+@app.post("/orders/process", response_model=ProcessOrderResponse)
+async def process_order(req: ProcessOrderRequest):
+    """Phase 1: Scores order, triggers LangGraph, routes to appropriate agent node."""
+    initial_state: OrderState = {
+        "order_id": req.order_id,
+        "customer_name": req.customer_name,
+        "phone": req.phone,
+        "address": req.address,
+        "pincode": req.pincode,
+        "order_value": req.order_value,
+        "payment_mode": req.payment_mode,
+        "user_history_rto_rate": req.user_history_rto_rate,
+        "user_total_orders": req.user_total_orders,
+        "orders_in_last_7days": req.orders_in_last_7days,
+        "address_length": len(req.address),
+        "pincode_rto_rate": req.pincode_rto_rate,
+        
+        # Initializing state fields for graph output
+        "risk_score": 0.0,
+        "risk_tier": "",
+        "agent_type": "",
+        "agent_outcome": "PENDING",
+        "agent_message": "",
+        "rescored": False,
+        "new_risk_score": None,
+        "final_decision": "",
+    }
+    
+    # Run the compiled LangGraph pipeline
+    final_state = await orchestrator.ainvoke(initial_state)
+    
+    # Store state to memory DB
+    save_order_state(req.order_id, final_state)
+    
+    return ProcessOrderResponse(
+        order_id=final_state["order_id"],
+        risk_score=final_state["risk_score"],
+        risk_tier=final_state["risk_tier"],
+        agent_type=final_state["agent_type"],
+        agent_message=final_state["agent_message"],
+        final_decision=final_state["final_decision"],
+        rescored=final_state["rescored"],
+        new_risk_score=final_state.get("new_risk_score"),
+    )
+
+@app.post("/orders/{order_id}/respond")
+async def handle_agent_response(order_id: str, outcome: str):
+    """Phase 2: Customer responded to agent. Updates state, triggers rescoring node."""
+    # Retrieve current state
+    state = get_order_state(order_id)
+    
+    # Update state with outcome (CONFIRMED / DECLINED / PREPAID / ADDRESS_UPDATED)
+    state["agent_outcome"] = outcome
+    
+    # Execute the rescoring node manually
+    rescore_result = rescore(state)
+    
+    # Update and save state
+    state.update(rescore_result)
+    save_order_state(order_id, state)
+    
+    return {
+        "order_id": order_id,
+        "agent_outcome": outcome,
+        "new_risk_score": state.get("new_risk_score"),
+        "final_decision": state.get("final_decision"),
+    }
+
+@app.get("/orders/{order_id}")
+def get_order(order_id: str):
+    """Debug/Inspect endpoint to retrieve active order state."""
+    return get_order_state(order_id)
 
 @app.get("/health")
 def health():

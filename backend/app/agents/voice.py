@@ -1,0 +1,154 @@
+import json
+from app.models.schemas import OrderState
+
+async def voice_agent(state: OrderState) -> dict:
+    """
+    High risk — Initiate voice call simulation framework.
+    Generates a highly structured system prompt for Gemini Audio-to-Audio sessions 
+    and a state-machine configuration for local fallback simulation.
+    """
+    customer = state.get("customer_name", "Customer")
+    value = state.get("order_value", 0.0)
+    address = state.get("address", "N/A")
+
+    # Prompt Engineering: Detailed instruction guiding Gemini's Audio-to-Audio state machine
+    system_instruction = f"""
+    # ROLE
+    You are a warm, polite, and efficient automated RTO Verification Voice Assistant for Meesho. 
+    Your voice output must sound like a natural Indian customer support agent.
+    
+    # OBJECTIVE
+    Verify a high-risk Cash on Delivery (COD) order placed by {customer} for the value of ₹{value}. 
+    Collect and validate delivery address landmarks to reduce RTO (Return to Origin) probability.
+
+    # CONVERSATION STATE MACHINE (Strictly Adhere to this Flow)
+    
+    1. [STATE: LanguageSelect]
+       - Assistant: "Hindi ya English?"
+       - If user says Hindi/Hinglish -> Transition to [STATE: GreetHindi]
+       - If user says English -> Transition to [STATE: GreetEnglish]
+       
+    2. [STATE: GreetHindi]
+       - Assistant: "Namaste {customer}! Meesho par aapka ₹{value} ka order confirm karein?"
+       - If user says "Cancel" / "Nahi" -> Transition to [STATE: Declined]
+       - If user says "Haan" / "Yes" / confirms -> Transition to [STATE: LandmarkAsk]
+
+    3. [STATE: GreetEnglish]
+       - Assistant: "Hi {customer}! Confirm your ₹{value} order?"
+       - If user cancels -> Transition to [STATE: Declined]
+       - If user confirms -> Transition to [STATE: LandmarkAsk]
+
+    4. [STATE: LandmarkAsk]
+       - Assistant (Hinglish/Hindi): "Aapka address hai: {address}. Delivery ke liye koi landmark bata do — jaise shop, mandir, ya school?"
+       - Assistant (English): "Your delivery address is: {address}. Please provide a nearby landmark — like a shop, temple, or school?"
+       - Wait for customer response, then transition to [STATE: RepeatBack]
+
+    5. [STATE: RepeatBack]
+       - Assistant: "[Mention the landmark they named] ke paas, sahi?"
+       - If user confirms -> Transition to [STATE: CheckQuality]
+       - If user corrects -> Re-ask and repeat back.
+
+    6. [STATE: CheckQuality]
+       - Evaluate the landmark details internally.
+       - If landmark is detailed (3 or more words, e.g., 'behind post office near temple') -> Transition to [STATE: Closing]
+       - If landmark is vague (less than 3 words, e.g., 'near shop') -> Transition to [STATE: FollowupLandmark]
+
+    7. [STATE: FollowupLandmark]
+       - Assistant: "Ek aur landmark? Jaise koi building, park ya petrol pump?"
+       - Wait for response, then transition to [STATE: RepeatBack2]
+
+    8. [STATE: RepeatBack2]
+       - Assistant: "[Mention the new landmark] bhi note kar liya."
+       - Transition to [STATE: Closing]
+
+    9. [STATE: Closing]
+       - Assistant: "Order confirm! Jaldi deliver hoga. Dhanywaad!"
+       - Terminate the session with outcome: CONFIRMED or ADDRESS_UPDATED.
+
+    10. [STATE: Declined]
+        - Assistant: "Cancel ho gaya. Phir milenge!"
+        - Terminate the session with outcome: DECLINED.
+
+    # CONSTRAINTS
+    - Do not break character. 
+    - Keep responses concise (under 2 sentences) to maintain low latency.
+    - Match user language dynamically. Use Hinglish where natural.
+    """
+
+    # Static JSON conversation tree passed to Frontend for fallback/local call simulator
+    simulated_conversation_tree = {
+        "start_state": "LanguageSelect",
+        "states": {
+            "LanguageSelect": {
+                "prompt": "Hindi ya English?",
+                "transitions": {
+                    "Hindi": "GreetHindi",
+                    "English": "GreetEnglish"
+                }
+            },
+            "GreetHindi": {
+                "prompt": f"Namaste {customer}! Meesho par aapka ₹{value} ka order received hua hai. Kya aap is order ko confirm karna chahte hain?",
+                "transitions": {
+                    "Confirm": "LandmarkAsk",
+                    "Cancel": "Declined"
+                }
+            },
+            "GreetEnglish": {
+                "prompt": f"Hi {customer}! Meesho has received your order of ₹{value}. Would you like to confirm this order?",
+                "transitions": {
+                    "Confirm": "LandmarkAsk",
+                    "Cancel": "Declined"
+                }
+            },
+            "LandmarkAsk": {
+                "prompt": f"Aapka address hai: {address}. Kripya iska koi landmark bata do — jaise shop, mandir, ya school?",
+                "transitions": {
+                    "submit_landmark": "RepeatBack"
+                }
+            },
+            "RepeatBack": {
+                "prompt": "Landmark ke paas, sahi?",
+                "transitions": {
+                    "Yes (Specific)": "Closing",
+                    "Yes (Vague)": "FollowupLandmark",
+                    "No/Correction": "LandmarkAsk"
+                }
+            },
+            "FollowupLandmark": {
+                "prompt": "Ek aur landmark? Jaise koi building, park ya petrol pump?",
+                "transitions": {
+                    "submit_landmark": "RepeatBack2"
+                }
+            },
+            "RepeatBack2": {
+                "prompt": "Theek hai, use bhi note kar liya.",
+                "transitions": {
+                    "next": "Closing"
+                }
+            },
+            "Closing": {
+                "prompt": "Order confirm! Jaldi deliver hoga. Dhanywaad!",
+                "outcome": "CONFIRMED",
+                "final_decision": "APPROVED",
+                "is_end": True
+            },
+            "Declined": {
+                "prompt": "Cancel ho gaya. Phir milenge!",
+                "outcome": "DECLINED",
+                "final_decision": "CANCELLED",
+                "is_end": True
+            }
+        }
+    }
+
+    # Combined payload for frontend integration
+    agent_message_payload = {
+        "system_instruction": system_instruction.strip(),
+        "conversation_tree": simulated_conversation_tree
+    }
+
+    return {
+        "agent_type": "voice_call",
+        "agent_outcome": "PENDING",
+        "agent_message": json.dumps(agent_message_payload),
+    }

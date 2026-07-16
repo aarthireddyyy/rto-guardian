@@ -1,0 +1,13 @@
+# Local environment variables containing API secrets
+.env
+backend/.env
+
+# Agent specifications and rules
+.agents/
+
+# Python virtual environment
+venv/
+
+# Python compiled files
+**/__pycache__/
+*.pyc
