@@ -1,4 +1,5 @@
 import os
+# pyrefly: ignore [missing-import]
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -10,6 +11,7 @@ groq_client = None
 
 if groq_api_key:
     try:
+        # pyrefly: ignore [missing-import]
         from groq import Groq
         groq_client = Groq(api_key=groq_api_key)
     except ImportError:

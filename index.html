@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RTO Guardian Dashboard</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg: #f3f4f6;
+            --text: #1f2937;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary);
+        }
+
+        .layout {
+            display: flex;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .layout {
+                flex-direction: column;
+            }
+        }
+
+        /* Left Panel - Form */
+        .form-panel {
+            flex: 1;
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        /* Right Panel - Result */
+        .result-panel {
+            flex: 1.5;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            color: white;
+            transition: opacity 0.2s;
+            font-size: 12px;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .btn-low {
+            background: var(--success);
+        }
+
+        .btn-med {
+            background: var(--warning);
+        }
+
+        .btn-high {
+            background: var(--danger);
+        }
+
+        .btn-submit {
+            background: var(--primary);
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        .progress-bar {
+            padding: 15px;
+            background: #e5e7eb;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .json-debug {
+            background: #1e293b;
+            color: #38bdf8;
+            padding: 10px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 12px;
+            overflow-x: auto;
+            max-height: 150px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        /* Views */
+        .view-section {
+            display: none;
+            margin-top: 10px;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        /* Auto Approve View */
+        #auto-approve-view {
+            text-align: center;
+            padding: 40px;
+            background: #ecfdf5;
+            border: 2px solid var(--success);
+            border-radius: 8px;
+            color: #065f46;
+        }
+
+        /* Chat View */
+        .chat-box {
+            background: #e5ddd5;
+            padding: 20px;
+            height: 300px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            border-radius: 8px;
+        }
+
+        .msg {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 8px;
+            max-width: 80%;
+            font-size: 14px;
+        }
+
+        .bot {
+            background: white;
+            align-self: flex-start;
+        }
+
+        .user {
+            background: #dcf8c6;
+            align-self: flex-end;
+        }
+
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .chat-btn {
+            background: white;
+            border: 1px solid #ccc;
+            padding: 8px;
+            color: #075E54;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .typing {
+            font-style: italic;
+            color: gray;
+            align-self: flex-start;
+            margin: 5px 0;
+        }
+
+        /* Voice View */
+        #voice-view {
+            text-align: center;
+            padding: 20px;
+            background: #fef2f2;
+            border-radius: 8px;
+            border: 1px solid #fee2e2;
+        }
+
+        .voice-btn {
+            padding: 15px 30px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px;
+        }
+
+        #connectBtn {
+            background: #4caf50;
+            color: white;
+        }
+
+        #speakBtn {
+            background: #2196f3;
+            color: white;
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        #speakBtn.active {
+            opacity: 1;
+            cursor: pointer;
+        }
+
+        #speakBtn.recording {
+            background: #f44336;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>RTO Guardian - Live Demo</h1>
+
+        <div class="controls">
+            <span style="font-weight:bold; font-size: 14px; margin-right:10px; align-self: center;">Autofill Test
+                Data:</span>
+            <button class="btn-low" onclick="autofill('low')">Low Risk</button>
+            <button class="btn-med" onclick="autofill('medium')">Medium Risk</button>
+            <button class="btn-high" onclick="autofill('high')">High Risk</button>
+        </div>
+
+        <div class="layout">
+            <!-- Input Form -->
+            <div class="form-panel">
+                <h3 style="margin-top:0;">Order Parameters</h3>
+                <div class="form-group">
+                    <label>Order Value (₹)</label>
+                    <input type="number" id="order_value" value="2000">
+                </div>
+                <div class="form-group">
+                    <label>Payment Mode</label>
+                    <select id="payment_mode">
+                        <option value="COD">COD</option>
+                        <option value="PREPAID">PREPAID</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>User History RTO Rate (0-1)</label>
+                    <input type="number" step="0.1" id="user_history_rto_rate" value="0.5">
+                </div>
+                <div class="form-group">
+                    <label>User Total Orders</label>
+                    <input type="number" id="user_total_orders" value="5">
+                </div>
+                <div class="form-group">
+                    <label>Orders in Last 7 Days</label>
+                    <input type="number" id="orders_in_last_7days" value="2">
+                </div>
+                <div class="form-group">
+                    <label>Pincode RTO Rate (0-1)</label>
+                    <input type="number" step="0.1" id="pincode_rto_rate" value="0.4">
+                </div>
+                <button class="btn-submit" onclick="processOrder()">Process Order</button>
+            </div>
+
+            <!-- Result Panel -->
+            <div class="result-panel">
+                <div id="progress" class="progress-bar">Waiting for order submission...</div>
+
+                <!-- System logs to prove backend connection -->
+                <pre id="json-debug" class="json-debug"></pre>
+
+                <!-- 1. Auto Approve View -->
+                <div id="auto-approve-view" class="view-section">
+                    <h2>✅ Order Auto-Approved</h2>
+                    <p>The ML model scored this as LOW risk. No agent intervention required.</p>
+                </div>
+
+                <!-- 2. WhatsApp Agent View -->
+                <div id="chat-view" class="view-section">
+                    <h3 style="margin-top:0; color:#075E54; text-align:center;">◀ Meesho Order Bot 🟢</h3>
+                    <div class="chat-box" id="chat"></div>
+                </div>
+
+                <!-- 3. Voice Agent View -->
+                <div id="voice-view" class="view-section">
+                    <h3>🎙️ RTO Voice Agent Active</h3>
+                    <div id="voice-status" style="margin-bottom: 15px; font-weight: bold; color: #555;">Status: Waiting
+                        to connect...</div>
+                    <button id="connectBtn" class="voice-btn" onclick="connectVoice()">1. Connect to Call</button>
+                    <br>
+                    <button id="speakBtn" class="voice-btn" disabled>2. Click to Speak</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentWs = null;
+        let currentOrderId = null;
+
+        // Profiles for autofill
+        const profiles = {
+            low: { user_history_rto_rate: 0.1, user_total_orders: 10, orders_in_last_7days: 1, order_value: 500, pincode_rto_rate: 0.1, payment_mode: "PREPAID" },
+            medium: { user_history_rto_rate: 0.5, user_total_orders: 5, orders_in_last_7days: 2, order_value: 2000, pincode_rto_rate: 0.4, payment_mode: "COD" },
+            high: { user_history_rto_rate: 0.9, user_total_orders: 1, orders_in_last_7days: 5, order_value: 8000, pincode_rto_rate: 0.8, payment_mode: "COD" }
+        };
+
+        function autofill(type) {
+            const p = profiles[type];
+            document.getElementById('user_history_rto_rate').value = p.user_history_rto_rate;
+            document.getElementById('user_total_orders').value = p.user_total_orders;
+            document.getElementById('orders_in_last_7days').value = p.orders_in_last_7days;
+            document.getElementById('order_value').value = p.order_value;
+            document.getElementById('pincode_rto_rate').value = p.pincode_rto_rate;
+            document.getElementById('payment_mode').value = p.payment_mode;
+        }
+
+        function resetViews() {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.getElementById('chat').innerHTML = '';
+            document.getElementById('json-debug').style.display = 'none';
+            if (currentWs) { currentWs.close(); currentWs = null; }
+        }
+
+        function setProgress(msg, color = '#e5e7eb', textColor = 'black') {
+            const p = document.getElementById('progress');
+            p.innerText = msg;
+            p.style.backgroundColor = color;
+            p.style.color = textColor;
+        }
+
+        async function processOrder() {
+            resetViews();
+            currentOrderId = "ORD-" + Math.floor(Math.random() * 10000);
+            setProgress(`Sending request to ML Backend for Order: ${currentOrderId}...`);
+
+            const payload = {
+                order_id: currentOrderId,
+                customer_name: "John Doe",
+                phone: "9999999999",
+                address: "123 Main St, City",
+                pincode: "110001",
+                user_history_rto_rate: parseFloat(document.getElementById('user_history_rto_rate').value),
+                user_total_orders: parseInt(document.getElementById('user_total_orders').value),
+                orders_in_last_7days: parseInt(document.getElementById('orders_in_last_7days').value),
+                order_value: parseFloat(document.getElementById('order_value').value),
+                pincode_rto_rate: parseFloat(document.getElementById('pincode_rto_rate').value),
+                payment_mode: document.getElementById('payment_mode').value
+            };
+
+            const debugEl = document.getElementById('json-debug');
+            debugEl.style.display = 'block';
+            debugEl.innerText = "// Request to http://localhost:8080/orders/process\n" + JSON.stringify(payload, null, 2);
+
+            try {
+                const res = await fetch("http://localhost:8080/orders/process", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+
+                debugEl.innerText += "\n\n// Response from Backend ML & Orchestrator\n" + JSON.stringify(data, null, 2);
+                setProgress(`Backend Decision => Risk Score: ${data.risk_score} | Tier: ${data.risk_tier} | Action: ${data.agent_type}`, '#dbeafe', '#1e40af');
+
+                if (data.agent_type === "auto_approve") {
+                    document.getElementById('auto-approve-view').classList.add('active');
+                }
+                else if (data.agent_type === "whatsapp") {
+                    document.getElementById('chat-view').classList.add('active');
+                    startChatAgent();
+                }
+                else if (data.agent_type === "voice_call") {
+                    document.getElementById('voice-view').classList.add('active');
+                }
+            } catch (err) {
+                setProgress(`Error: ${err.message}`, '#fee2e2', '#b91c1c');
+                debugEl.innerText += `\n\nERROR: Failed to reach backend. Ensure FastAPI is running on port 8080.`;
+            }
+        }
+
+        // --- CHAT AGENT LOGIC ---
+        function startChatAgent() {
+            const chat = document.getElementById("chat");
+            currentWs = new WebSocket(`ws://localhost:8080/ws/chat/${currentOrderId}`);
+
+            currentWs.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                const typing = document.getElementById("typing");
+                if (typing) typing.remove();
+
+                if (data.type === "typing") {
+                    chat.innerHTML += `<div id="typing" class="typing">typing...</div>`;
+                } else if (data.error) {
+                    chat.innerHTML += `<div class="msg bot">[System Error: ${data.error}]</div>`;
+                } else if (data.type === "message") {
+                    chat.innerHTML += `<div class="msg bot">${data.text}</div>`;
+                    if (data.buttons) {
+                        let btnHtml = `<div class="button-container" id="btns-${Date.now()}">`;
+                        data.buttons.forEach(b => {
+                            btnHtml += `<button class="chat-btn" onclick="sendChatReply('${b.id}', '${b.label}', this)">${b.label}</button>`;
+                        });
+                        btnHtml += `</div>`;
+                        chat.innerHTML += btnHtml;
+                    }
+                } else if (data.type === "outcome") {
+                    chat.innerHTML += `<div class="msg bot" style="background:#e0f2fe;">[System: Final outcome is ${data.outcome}]</div>`;
+                }
+                chat.scrollTop = chat.scrollHeight;
+            };
+        }
+
+        window.sendChatReply = function (id, label, btnEl) {
+            btnEl.parentElement.remove();
+            document.getElementById("chat").innerHTML += `<div class="msg user">${label}</div>`;
+            if (currentWs) currentWs.send(JSON.stringify({ action: id }));
+        }
+
+        // --- VOICE AGENT LOGIC ---
+        let mediaRecorder;
+        let audioChunks = [];
+
+        async function connectVoice() {
+            const statusEl = document.getElementById('voice-status');
+            const connectBtn = document.getElementById('connectBtn');
+            const speakBtn = document.getElementById('speakBtn');
+
+            statusEl.innerText = "Status: Connecting...";
+            currentWs = new WebSocket(`ws://localhost:8080/ws/voice/${currentOrderId}`);
+            currentWs.binaryType = "blob";
+
+            currentWs.onopen = async () => {
+                statusEl.innerText = "Status: Connected! 📞";
+                connectBtn.style.display = "none";
+
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+
+                mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    statusEl.innerText = "Status: Sending Audio to Brain... 🧠";
+                    currentWs.send(audioBlob);
+                    audioChunks = [];
+                };
+
+                speakBtn.disabled = false;
+                speakBtn.classList.add('active');
+            };
+
+            currentWs.onmessage = async (event) => {
+                statusEl.innerText = "Status: Bot is speaking... 🔊";
+                const audioBlob = new Blob([event.data], { type: 'audio/wav' });
+                const audioUrl = URL.createObjectURL(audioBlob);
+                const audio = new Audio(audioUrl);
+
+                audio.onended = () => { statusEl.innerText = "Status: Listening for you... 🎤"; };
+                await audio.play();
+            };
+
+            currentWs.onclose = () => {
+                statusEl.innerText = "Status: Call Ended (Disconnected)";
+                speakBtn.disabled = true;
+                speakBtn.classList.remove('active');
+                connectBtn.style.display = "inline-block";
+            };
+
+            speakBtn.onclick = () => {
+                if (!mediaRecorder) return;
+                if (mediaRecorder.state === "inactive") {
+                    mediaRecorder.start();
+                    speakBtn.innerText = "🛑 Click to STOP & SEND";
+                    speakBtn.classList.add('recording');
+                    statusEl.innerText = "Status: You are speaking... 🎤";
+                } else if (mediaRecorder.state === "recording") {
+                    mediaRecorder.stop();
+                    speakBtn.innerText = "2. Click to Speak";
+                    speakBtn.classList.remove('recording');
+                }
+            };
+        }
+    </script>
+</body>
+
+</html>

@@ -2,6 +2,7 @@ import os
 import httpx
 import base64
 import logging
+# pyrefly: ignore [missing-import]
 from dotenv import load_dotenv
 
 # Load environment variables
