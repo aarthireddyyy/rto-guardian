@@ -14,3 +14,8 @@ venv/
 
 # Test HTML files
 chat_test.html
+test_groq.py
+test_output.wav
+test_sarvam.py
+test_voice.py
+voice_test.html

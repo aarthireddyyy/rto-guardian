@@ -13,6 +13,7 @@ from app.models.schemas import (
 from app.agents.orchestrator import orchestrator
 from app.agents.rescore import rescore
 from app.websockets.chat_handler import router as chat_router
+from app.websockets.voice_ws_handler import router as voice_router
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -27,6 +28,7 @@ app.add_middleware(
 )
 
 app.include_router(chat_router)
+app.include_router(voice_router)
 
 # Global variable to hold the loaded ML artifacts
 artifact = None
