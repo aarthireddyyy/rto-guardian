@@ -11,3 +11,6 @@ venv/
 # Python compiled files
 **/__pycache__/
 *.pyc
+
+# Test HTML files
+chat_test.html

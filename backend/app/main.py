@@ -12,9 +12,21 @@ from app.models.schemas import (
 )
 from app.agents.orchestrator import orchestrator
 from app.agents.rescore import rescore
+from app.websockets.chat_handler import router as chat_router
 import uvicorn
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="RTO Risk Scoring & Agent Orchestrator API")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(chat_router)
 
 # Global variable to hold the loaded ML artifacts
 artifact = None

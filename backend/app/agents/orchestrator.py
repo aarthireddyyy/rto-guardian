@@ -24,7 +24,7 @@ async def score_order(state: OrderState) -> dict:
         # Call the FastAPI /predict endpoint hosted locally
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                "http://127.0.0.1:8000/predict",
+                "http://127.0.0.1:8080/predict",
                 json=payload,
                 timeout=5.0
             )
@@ -42,7 +42,7 @@ async def score_order(state: OrderState) -> dict:
         if state.get("payment_mode") == "COD":
             if state.get("user_history_rto_rate", 0.0) > 0.5:
                 score = 0.85
-            elif state.get("order_value", 0.0) > 1000.0:
+            elif state.get("order_value", 0.0) >= 1000.0:
                 score = 0.55
         
         tier = "LOW" if score < 0.3 else "MEDIUM" if score < 0.7 else "HIGH"
