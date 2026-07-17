@@ -1,0 +1,15 @@
+xgboost
+scikit-learn
+pandas
+numpy
+joblib
+fastapi
+uvicorn
+huggingface-hub
+shap
+matplotlib
+langgraph
+groq
+httpx
+python-dotenv
+websockets

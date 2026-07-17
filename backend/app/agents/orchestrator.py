@@ -1,4 +1,5 @@
 import httpx
+import logging
 # pyrefly: ignore [missing-import]
 from langgraph.graph import StateGraph, END
 from app.models.schemas import OrderState
@@ -6,6 +7,8 @@ from app.agents.auto_approve import auto_approve
 from app.agents.whatsapp import whatsapp_agent
 from app.agents.voice import voice_agent
 from app.agents.rescore import rescore
+
+logger = logging.getLogger(__name__)
 
 # Define the score_order node
 async def score_order(state: OrderState) -> dict:
@@ -32,11 +35,13 @@ async def score_order(state: OrderState) -> dict:
             
             if response.status_code == 200:
                 result = response.json()
+                logger.info(f"ML Scorer result: risk_score={result['risk_score']}, tier={result['risk_tier']}")
                 return {
                     "risk_score": result["risk_score"],
                     "risk_tier": result["risk_tier"]
                 }
-    except Exception:
+    except Exception as e:
+        logger.warning(f"ML Scorer unavailable, using fallback heuristics: {e}")
         # Log/Warning fallback: If the FastAPI server is not running during tests,
         # we generate a mock risk score based on simple heuristics to allow seamless local testing
         score = 0.15 # Default low risk
@@ -47,6 +52,7 @@ async def score_order(state: OrderState) -> dict:
                 score = 0.55
         
         tier = "LOW" if score < 0.3 else "MEDIUM" if score < 0.7 else "HIGH"
+        logger.info(f"Fallback scoring: risk_score={score}, tier={tier}")
         return {
             "risk_score": score,
             "risk_tier": tier
@@ -58,11 +64,14 @@ def route_by_risk(state: OrderState) -> str:
     score = state.get("risk_score", 0.0)
     
     if score < 0.3:
-        return "auto_approve"
+        route = "auto_approve"
     elif score < 0.7:
-        return "whatsapp_agent"
+        route = "whatsapp_agent"
     else:
-        return "voice_agent"
+        route = "voice_agent"
+    
+    logger.info(f"Routing order {state.get('order_id')} with score {score} to: {route}")
+    return route
 
 def build_orchestrator():
     """Build and compile the LangGraph workflow."""

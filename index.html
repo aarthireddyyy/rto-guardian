@@ -24,15 +24,22 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            overflow-x: hidden;
+            box-sizing: border-box;
+        }
+
+        * {
+            box-sizing: border-box;
         }
 
         .container {
             width: 100%;
-            max-width: 900px;
+            max-width: 1200px;
             background: white;
             padding: 20px;
             border-radius: 12px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            overflow-x: hidden;
         }
 
         h1 {
@@ -43,6 +50,7 @@
         .layout {
             display: flex;
             gap: 20px;
+            flex-wrap: wrap;
         }
 
         @media (max-width: 768px) {
@@ -54,6 +62,8 @@
         /* Left Panel - Form */
         .form-panel {
             flex: 1;
+            min-width: 300px;
+            max-width: 400px;
             background: #f8fafc;
             padding: 20px;
             border-radius: 8px;
@@ -82,10 +92,12 @@
 
         /* Right Panel - Result */
         .result-panel {
-            flex: 1.5;
+            flex: 1;
+            min-width: 400px;
             display: flex;
             flex-direction: column;
             gap: 15px;
+            overflow-x: hidden;
         }
 
         .controls {
@@ -150,6 +162,8 @@
             max-height: 150px;
             margin-top: 10px;
             display: none;
+            word-wrap: break-word;
+            white-space: pre-wrap;
         }
 
         /* Views */
@@ -226,11 +240,15 @@
 
         /* Voice View */
         #voice-view {
-            text-align: center;
             padding: 20px;
             background: #fef2f2;
             border-radius: 8px;
             border: 1px solid #fee2e2;
+        }
+
+        .voice-controls {
+            text-align: center;
+            margin-bottom: 20px;
         }
 
         .voice-btn {
@@ -261,6 +279,65 @@
 
         #speakBtn.recording {
             background: #f44336;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .voice-transcript {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+
+        .voice-message {
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .voice-message.bot {
+            background: #e0f2fe;
+            border-left: 3px solid #0284c7;
+        }
+
+        .voice-message.user {
+            background: #dcfce7;
+            border-left: 3px solid #16a34a;
+        }
+
+        .voice-message.system {
+            background: #fef3c7;
+            border-left: 3px solid #f59e0b;
+            font-style: italic;
+            font-size: 13px;
+        }
+
+        .voice-state {
+            display: inline-block;
+            padding: 2px 8px;
+            background: #6b7280;
+            color: white;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-left: 8px;
         }
     </style>
 </head>
@@ -333,12 +410,21 @@
 
                 <!-- 3. Voice Agent View -->
                 <div id="voice-view" class="view-section">
-                    <h3>🎙️ RTO Voice Agent Active</h3>
-                    <div id="voice-status" style="margin-bottom: 15px; font-weight: bold; color: #555;">Status: Waiting
-                        to connect...</div>
-                    <button id="connectBtn" class="voice-btn" onclick="connectVoice()">1. Connect to Call</button>
-                    <br>
-                    <button id="speakBtn" class="voice-btn" disabled>2. Click to Speak</button>
+                    <h3>🎙️ Voice Call Agent</h3>
+                    <div id="voice-status"
+                        style="margin-bottom: 20px; padding: 15px; font-weight: bold; color: #555; text-align: center; background: #fef3c7; border-radius: 8px;">
+                        Status: Waiting to connect...
+                    </div>
+                    <div class="voice-controls"
+                        style="text-align: center; margin-bottom: 20px; padding: 20px; background: white; border-radius: 8px; border: 2px solid #e5e7eb;">
+                        <button id="connectBtn" class="voice-btn" onclick="connectVoice()" style="font-size: 18px;">📞
+                            Connect to Call</button>
+                        <button id="speakBtn" class="voice-btn" disabled style="font-size: 18px;">🎤 Click to
+                            Speak</button>
+                    </div>
+                    <div class="voice-transcript" id="voice-transcript">
+                        <div class="voice-message system">💡 Transcript will appear here once the call starts...</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -430,7 +516,21 @@
                     startChatAgent();
                 }
                 else if (data.agent_type === "voice_call") {
-                    document.getElementById('voice-view').classList.add('active');
+                    console.log("✓ Voice agent activated, showing voice view");
+                    const voiceView = document.getElementById('voice-view');
+                    voiceView.classList.add('active');
+                    console.log("Voice view classes:", voiceView.className);
+                    console.log("Voice view display:", window.getComputedStyle(voiceView).display);
+
+                    // Update status immediately
+                    const statusEl = document.getElementById('voice-status');
+                    statusEl.innerText = "Status: Voice agent ready. Click 'Connect to Call' below to start!";
+                    statusEl.style.color = "#16a34a";
+
+                    // Auto-connect to voice call after a short delay
+                    setTimeout(() => {
+                        setProgress('Voice agent activated. Click "Connect to Call" to start...', '#fef2f2', '#991b1b');
+                    }, 500);
                 }
             } catch (err) {
                 setProgress(`Error: ${err.message}`, '#fee2e2', '#b91c1c');
@@ -478,62 +578,146 @@
         // --- VOICE AGENT LOGIC ---
         let mediaRecorder;
         let audioChunks = [];
+        let voiceTranscript = null;
+
+        function addVoiceMessage(type, text, state = null) {
+            if (!voiceTranscript) {
+                voiceTranscript = document.getElementById('voice-transcript');
+                voiceTranscript.innerHTML = ''; // Clear initial message
+            }
+
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `voice-message ${type}`;
+
+            let icon = '';
+            if (type === 'bot') icon = '🤖 Bot: ';
+            else if (type === 'user') icon = '👤 You: ';
+            else if (type === 'system') icon = '📡 System: ';
+
+            msgDiv.innerHTML = icon + text;
+
+            if (state) {
+                const stateSpan = document.createElement('span');
+                stateSpan.className = 'voice-state';
+                stateSpan.textContent = state;
+                msgDiv.appendChild(stateSpan);
+            }
+
+            voiceTranscript.appendChild(msgDiv);
+            voiceTranscript.scrollTop = voiceTranscript.scrollHeight;
+        }
 
         async function connectVoice() {
             const statusEl = document.getElementById('voice-status');
             const connectBtn = document.getElementById('connectBtn');
             const speakBtn = document.getElementById('speakBtn');
+            voiceTranscript = document.getElementById('voice-transcript');
+
+            statusEl.innerText = "Status: Connecting to voice agent...";
+            addVoiceMessage('system', 'Connecting to voice agent...');
 
             statusEl.innerText = "Status: Connecting...";
             currentWs = new WebSocket(`${BACKEND_WS}/ws/voice/${currentOrderId}`);
             currentWs.binaryType = "blob";
 
             currentWs.onopen = async () => {
-                statusEl.innerText = "Status: Connected! 📞";
+                statusEl.innerText = "Status: Connected! 📞 Initializing call...";
+                addVoiceMessage('system', 'Call connected! Waiting for agent greeting...');
                 connectBtn.style.display = "none";
 
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRecorder = new MediaRecorder(stream);
+                // Request microphone access
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
 
-                mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-                mediaRecorder.onstop = () => {
-                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                    statusEl.innerText = "Status: Sending Audio to Brain... 🧠";
-                    currentWs.send(audioBlob);
-                    audioChunks = [];
-                };
+                    mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+                    mediaRecorder.onstop = () => {
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                        statusEl.innerText = "Status: Processing your speech... 🧠";
+                        addVoiceMessage('system', 'Processing your speech...');
+                        currentWs.send(audioBlob);
+                        audioChunks = [];
+                    };
 
-                speakBtn.disabled = false;
-                speakBtn.classList.add('active');
+                    speakBtn.disabled = false;
+                    speakBtn.classList.add('active');
+                } catch (err) {
+                    addVoiceMessage('system', `⚠️ Microphone access denied: ${err.message}`);
+                    statusEl.innerText = "Status: Microphone access denied";
+                }
             };
 
             currentWs.onmessage = async (event) => {
-                statusEl.innerText = "Status: Bot is speaking... 🔊";
-                const audioBlob = new Blob([event.data], { type: 'audio/wav' });
-                const audioUrl = URL.createObjectURL(audioBlob);
-                const audio = new Audio(audioUrl);
+                // Handle text messages (JSON)
+                if (typeof event.data === 'string') {
+                    const data = JSON.parse(event.data);
 
-                audio.onended = () => { statusEl.innerText = "Status: Listening for you... 🎤"; };
-                await audio.play();
+                    if (data.type === 'state') {
+                        statusEl.innerText = `Status: ${data.message}`;
+                        if (data.state) {
+                            addVoiceMessage('system', data.message, data.state);
+                        }
+                    } else if (data.type === 'bot_message') {
+                        addVoiceMessage('bot', data.text, data.state);
+                        statusEl.innerText = "Status: Bot is speaking... 🔊";
+                    } else if (data.type === 'user_message') {
+                        addVoiceMessage('user', data.text, data.state);
+                    } else if (data.type === 'call_ended') {
+                        statusEl.innerText = `Status: Call Ended - ${data.outcome}`;
+                        addVoiceMessage('system', `✅ Call ended with outcome: ${data.outcome}`);
+                        if (data.landmark) {
+                            addVoiceMessage('system', `📍 Landmark collected: ${data.landmark}`);
+                        }
+                        speakBtn.disabled = true;
+                        speakBtn.classList.remove('active');
+                        connectBtn.style.display = "inline-block";
+                        connectBtn.innerText = "📞 Reconnect";
+                    } else if (data.type === 'error') {
+                        addVoiceMessage('system', `⚠️ Error: ${data.message}`);
+                        statusEl.innerText = `Status: Error - ${data.message}`;
+                    }
+                }
+                // Handle binary messages (audio)
+                else if (event.data instanceof Blob) {
+                    statusEl.innerText = "Status: Bot is speaking... 🔊";
+                    const audioBlob = event.data;
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    const audio = new Audio(audioUrl);
+
+                    audio.onended = () => {
+                        statusEl.innerText = "Status: Your turn to speak... 🎤";
+                    };
+                    await audio.play();
+                }
+            };
+
+            currentWs.onerror = (error) => {
+                addVoiceMessage('system', `⚠️ WebSocket error: ${error}`);
+                statusEl.innerText = "Status: Connection error";
             };
 
             currentWs.onclose = () => {
-                statusEl.innerText = "Status: Call Ended (Disconnected)";
+                if (statusEl.innerText.indexOf('Call Ended') === -1) {
+                    statusEl.innerText = "Status: Call Disconnected";
+                    addVoiceMessage('system', 'Call disconnected');
+                }
                 speakBtn.disabled = true;
-                speakBtn.classList.remove('active');
+                speakBtn.classList.remove('active', 'recording');
                 connectBtn.style.display = "inline-block";
+                connectBtn.innerText = "📞 Reconnect";
             };
 
             speakBtn.onclick = () => {
                 if (!mediaRecorder) return;
                 if (mediaRecorder.state === "inactive") {
                     mediaRecorder.start();
-                    speakBtn.innerText = "🛑 Click to STOP & SEND";
+                    speakBtn.innerText = "🛑 Stop & Send";
                     speakBtn.classList.add('recording');
-                    statusEl.innerText = "Status: You are speaking... 🎤";
+                    statusEl.innerText = "Status: Recording your voice... 🎤";
+                    addVoiceMessage('system', 'Recording your voice...');
                 } else if (mediaRecorder.state === "recording") {
                     mediaRecorder.stop();
-                    speakBtn.innerText = "2. Click to Speak";
+                    speakBtn.innerText = "🎤 Click to Speak";
                     speakBtn.classList.remove('recording');
                 }
             };

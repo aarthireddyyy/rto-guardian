@@ -13,7 +13,7 @@ from app.models.schemas import (
 from app.agents.orchestrator import orchestrator
 from app.agents.rescore import rescore
 from app.websockets.chat_handler import router as chat_router
-from app.websockets.voice_ws_handler import router as voice_router
+from app.websockets.voice_ws_handler import router as voice_router, orders_store as voice_orders_store
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -133,6 +133,15 @@ async def process_order(req: ProcessOrderRequest):
         "rescored": False,
         "new_risk_score": None,
         "final_decision": "",
+    }
+    
+    # Store order details for voice agent WebSocket
+    voice_orders_store[req.order_id] = {
+        "customer_name": req.customer_name,
+        "order_value": req.order_value,
+        "address": req.address,
+        "phone": req.phone,
+        "pincode": req.pincode
     }
     
     # Run the compiled LangGraph pipeline

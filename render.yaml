@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: rto-guardian
+    runtime: python
+    buildCommand: pip install -r requirements-prod.txt
+    startCommand: cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: SARVAM_API_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
