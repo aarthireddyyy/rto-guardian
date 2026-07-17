@@ -348,6 +348,15 @@
         let currentWs = null;
         let currentOrderId = null;
 
+        // --- DEPLOYMENT CONFIGURATION ---
+        // Change these URLs to your Render deployment URLs before pushing to Vercel
+        // Example: 
+        // const BACKEND_HTTP = "https://your-app.onrender.com";
+        // const BACKEND_WS = "wss://your-app.onrender.com";
+        const BACKEND_HTTP = "http://localhost:8080";
+        const BACKEND_WS = "ws://localhost:8080";
+
+
         // Profiles for autofill
         const profiles = {
             low: { user_history_rto_rate: 0.1, user_total_orders: 10, orders_in_last_7days: 1, order_value: 500, pincode_rto_rate: 0.1, payment_mode: "PREPAID" },
@@ -400,10 +409,10 @@
 
             const debugEl = document.getElementById('json-debug');
             debugEl.style.display = 'block';
-            debugEl.innerText = "// Request to http://localhost:8080/orders/process\n" + JSON.stringify(payload, null, 2);
+            debugEl.innerText = "// Request to " + BACKEND_HTTP + "/orders/process\n" + JSON.stringify(payload, null, 2);
 
             try {
-                const res = await fetch("http://localhost:8080/orders/process", {
+                const res = await fetch(`${BACKEND_HTTP}/orders/process`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(payload)
@@ -432,7 +441,7 @@
         // --- CHAT AGENT LOGIC ---
         function startChatAgent() {
             const chat = document.getElementById("chat");
-            currentWs = new WebSocket(`ws://localhost:8080/ws/chat/${currentOrderId}`);
+            currentWs = new WebSocket(`${BACKEND_WS}/ws/chat/${currentOrderId}`);
 
             currentWs.onmessage = (event) => {
                 const data = JSON.parse(event.data);
@@ -476,7 +485,7 @@
             const speakBtn = document.getElementById('speakBtn');
 
             statusEl.innerText = "Status: Connecting...";
-            currentWs = new WebSocket(`ws://localhost:8080/ws/voice/${currentOrderId}`);
+            currentWs = new WebSocket(`${BACKEND_WS}/ws/voice/${currentOrderId}`);
             currentWs.binaryType = "blob";
 
             currentWs.onopen = async () => {
