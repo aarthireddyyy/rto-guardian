@@ -352,21 +352,6 @@ curl -X POST http://localhost:8080/orders/process \
 
 ---
 
-## 🏆 What Makes This Hackathon-Worthy
-
-| Dimension | What We Built |
-|:---|:---|
-| **Real Problem** | ₹25,000 Cr/year RTO crisis — affecting every Indian e-commerce brand |
-| **ML + AI Agents** | XGBoost risk scoring + LangGraph multi-agent orchestration |
-| **Multilingual Voice AI** | Hindi/Hinglish/English voice calls with Sarvam ASR/TTS |
-| **LLM Integration** | Groq LLaMA 3.1 for intent classification and message generation |
-| **Behavioral Nudging** | Smart prepay nudge converts COD → UPI, reducing RTO at the source |
-| **Production Architecture** | Async FastAPI, WebSockets, Pydantic schemas, stateful workflows |
-| **Explainable AI** | SHAP visualizations make every ML decision transparent |
-| **India-First Design** | Hinglish messages, INR pricing, Indian voice models, COD-first logic |
-
----
-
 ## 🗺️ Roadmap
 
 - [ ] 🔌 **Shopify / WooCommerce Plugin** — one-click install for D2C brands
