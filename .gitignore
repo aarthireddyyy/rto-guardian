@@ -18,4 +18,5 @@ test_groq.py
 test_output.wav
 test_sarvam.py
 test_voice.py
-voice_test.html
+voice_test.html"__pycache__/" 
+"*.pyc" 
