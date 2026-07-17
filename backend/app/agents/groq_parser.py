@@ -26,8 +26,11 @@ You are an intent classifier for a voice bot in India.
 The user said: "{text}"
 
 Your job is to classify their intent into EXACTLY one of the following options: {options}
-If they are agreeing or saying yes in Hindi/Hinglish (like "haan", "theek hai", "kardo"), output YES.
-If they are disagreeing (like "nahi", "cancel"), output NO.
+- If they want Hindi (like "hindi", "hinglish"), output HINDI.
+- If they want English (like "english", "angrezi"), output ENGLISH.
+- If they want Telugu (like "telugu"), output TELUGU.
+- If they are agreeing or saying yes in Hindi/Hinglish (like "haan", "theek hai", "kardo"), English ("yes", "confirm"), or Telugu (like "avunu", "sare", "avunandi"), output YES.
+- If they are disagreeing or saying no in Hindi/Hinglish (like "nahi", "cancel"), English ("no", "don't"), or Telugu (like "kadu", "oddu", "oddu andi"), output NO.
 
 Respond with ONLY the exact option string from the list above. No other words, no punctuation.
 """
@@ -61,11 +64,13 @@ async def extract_landmark(text: str) -> str:
 The user was asked for a landmark for delivery.
 They said: "{text}"
 
-Extract JUST the landmark. Remove conversational filler words like "ke paas", "ke peeche", "hai", "mera ghar".
+Extract JUST the landmark. Remove conversational filler words in Hindi ("ke paas", "ke peeche", "hai", "mera ghar"), English ("near", "behind", "next to"), or Telugu ("daggara", "venakala", "pakkana", "undi", "vundi").
 For example:
 - "Petrol pump ke peeche hai" -> "Petrol pump"
 - "Ek bada mandir hai udhar aaja" -> "Bada mandir"
 - "School ke paas" -> "School"
+- "School daggara" -> "School"
+- "Pedda gudi venakala undi" -> "Pedda gudi"
 
 Respond with ONLY the extracted landmark string. Nothing else.
 """
