@@ -26,9 +26,11 @@ async def score_order(state: OrderState) -> dict:
 
     try:
         # Call the FastAPI /predict endpoint hosted locally
+        import os
+        port = os.getenv("PORT", "8080")
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                "http://127.0.0.1:8080/predict",
+                f"http://127.0.0.1:{port}/predict",
                 json=payload,
                 timeout=5.0
             )
