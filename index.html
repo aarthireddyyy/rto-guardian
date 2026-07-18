@@ -435,12 +435,12 @@
         let currentOrderId = null;
 
         // --- DEPLOYMENT CONFIGURATION ---
-        // Change these URLs to your Render deployment URLs before pushing to Vercel
-        // Example: 
-        // const BACKEND_HTTP = "https://your-app.onrender.com";
-        // const BACKEND_WS = "wss://your-app.onrender.com";
-        const BACKEND_HTTP = "http://localhost:8080";
-        const BACKEND_WS = "ws://localhost:8080";
+        // For local testing, we force isLocal to true so it uses localhost:8080
+        const isLocal = true; 
+        const RENDER_HOST = "rto-guardian-backend.onrender.com"; 
+
+        const BACKEND_HTTP = isLocal ? "http://localhost:8080" : `https://${RENDER_HOST}`;
+        const BACKEND_WS = isLocal ? "ws://localhost:8080" : `wss://${RENDER_HOST}`;
 
 
         // Profiles for autofill
