@@ -360,6 +360,14 @@
             <div class="form-panel">
                 <h3 style="margin-top:0;">Order Parameters</h3>
                 <div class="form-group">
+                    <label>Customer Name</label>
+                    <input type="text" id="customer_name" value="Amit Patel">
+                </div>
+                <div class="form-group">
+                    <label>Address</label>
+                    <input type="text" id="address" value="Flat 4B, Sunflower Apts, MG Road, Bangalore, Karnataka - Detailed and accurate">
+                </div>
+                <div class="form-group">
                     <label>Order Value (₹)</label>
                     <input type="number" id="order_value" value="2000">
                 </div>
@@ -445,13 +453,15 @@
 
         // Profiles for autofill
         const profiles = {
-            low: { user_history_rto_rate: 0.1, user_total_orders: 10, orders_in_last_7days: 1, order_value: 500, pincode_rto_rate: 0.1, payment_mode: "PREPAID" },
-            medium: { user_history_rto_rate: 0.5, user_total_orders: 5, orders_in_last_7days: 2, order_value: 2000, pincode_rto_rate: 0.4, payment_mode: "COD" },
-            high: { user_history_rto_rate: 0.9, user_total_orders: 1, orders_in_last_7days: 5, order_value: 8000, pincode_rto_rate: 0.8, payment_mode: "COD" }
+            low: { customer_name: "Amit Patel", address: "Flat 4B, Sunflower Apts, MG Road, Bangalore, Karnataka - Detailed and accurate", user_history_rto_rate: 0.1, user_total_orders: 10, orders_in_last_7days: 1, order_value: 500, pincode_rto_rate: 0.1, payment_mode: "PREPAID" },
+            medium: { customer_name: "Priya Sharma", address: "House no 12, Sector 4, New Delhi", user_history_rto_rate: 0.5, user_total_orders: 5, orders_in_last_7days: 2, order_value: 2000, pincode_rto_rate: 0.4, payment_mode: "COD" },
+            high: { customer_name: "Rahul Kumar", address: "Near temple", user_history_rto_rate: 0.9, user_total_orders: 1, orders_in_last_7days: 5, order_value: 8000, pincode_rto_rate: 0.8, payment_mode: "COD" }
         };
 
         function autofill(type) {
             const p = profiles[type];
+            document.getElementById('customer_name').value = p.customer_name;
+            document.getElementById('address').value = p.address;
             document.getElementById('user_history_rto_rate').value = p.user_history_rto_rate;
             document.getElementById('user_total_orders').value = p.user_total_orders;
             document.getElementById('orders_in_last_7days').value = p.orders_in_last_7days;
@@ -481,9 +491,9 @@
 
             const payload = {
                 order_id: currentOrderId,
-                customer_name: "John Doe",
+                customer_name: document.getElementById('customer_name').value,
                 phone: "9999999999",
-                address: "123 Main St, City",
+                address: document.getElementById('address').value,
                 pincode: "110001",
                 user_history_rto_rate: parseFloat(document.getElementById('user_history_rto_rate').value),
                 user_total_orders: parseInt(document.getElementById('user_total_orders').value),
