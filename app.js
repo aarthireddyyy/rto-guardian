@@ -1,7 +1,8 @@
 let currentWs = null;
 let currentOrderId = null;
 
-const isLocal = true;
+const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+// IMPORTANT: Verify this is your exact Render URL (without https://)
 const RENDER_HOST = "rto-guardian-backend.onrender.com";
 
 const BACKEND_HTTP = isLocal ? "http://localhost:8080" : `https://${RENDER_HOST}`;
