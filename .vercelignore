@@ -1,0 +1,6 @@
+backend/
+requirements.txt
+requirements-prod.txt
+*.py
+render.yaml
+.env
