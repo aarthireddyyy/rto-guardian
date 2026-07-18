@@ -63,9 +63,9 @@ def route_by_risk(state: OrderState) -> str:
     """Decide which agent node to run based on the initial risk score."""
     score = state.get("risk_score", 0.0)
     
-    if score < 0.3:
+    if score < 0.25:
         route = "auto_approve"
-    elif score < 0.7:
+    elif score < 0.45:
         route = "whatsapp_agent"
     else:
         route = "voice_agent"

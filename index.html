@@ -4,352 +4,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RTO Guardian Dashboard</title>
-    <style>
-        :root {
-            --primary: #4f46e5;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --bg: #f3f4f6;
-            --text: #1f2937;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            overflow-x: hidden;
-            box-sizing: border-box;
-        }
-
-        * {
-            box-sizing: border-box;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 1200px;
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            overflow-x: hidden;
-        }
-
-        h1 {
-            text-align: center;
-            color: var(--primary);
-        }
-
-        .layout {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-
-        @media (max-width: 768px) {
-            .layout {
-                flex-direction: column;
-            }
-        }
-
-        /* Left Panel - Form */
-        .form-panel {
-            flex: 1;
-            min-width: 300px;
-            max-width: 400px;
-            background: #f8fafc;
-            padding: 20px;
-            border-radius: 8px;
-            border: 1px solid #e2e8f0;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 5px;
-            font-size: 14px;
-        }
-
-        input,
-        select {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #cbd5e1;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-
-        /* Right Panel - Result */
-        .result-panel {
-            flex: 1;
-            min-width: 400px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            overflow-x: hidden;
-        }
-
-        .controls {
-            display: flex;
-            gap: 5px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
-
-        button {
-            padding: 8px 12px;
-            border: none;
-            border-radius: 4px;
-            font-weight: 600;
-            cursor: pointer;
-            color: white;
-            transition: opacity 0.2s;
-            font-size: 12px;
-        }
-
-        button:hover {
-            opacity: 0.9;
-        }
-
-        .btn-low {
-            background: var(--success);
-        }
-
-        .btn-med {
-            background: var(--warning);
-        }
-
-        .btn-high {
-            background: var(--danger);
-        }
-
-        .btn-submit {
-            background: var(--primary);
-            width: 100%;
-            padding: 12px;
-            font-size: 16px;
-            margin-top: 10px;
-        }
-
-        .progress-bar {
-            padding: 15px;
-            background: #e5e7eb;
-            border-radius: 6px;
-            text-align: center;
-            font-weight: bold;
-            transition: all 0.3s;
-        }
-
-        .json-debug {
-            background: #1e293b;
-            color: #38bdf8;
-            padding: 10px;
-            border-radius: 6px;
-            font-family: monospace;
-            font-size: 12px;
-            overflow-x: auto;
-            max-height: 150px;
-            margin-top: 10px;
-            display: none;
-            word-wrap: break-word;
-            white-space: pre-wrap;
-        }
-
-        /* Views */
-        .view-section {
-            display: none;
-            margin-top: 10px;
-        }
-
-        .view-section.active {
-            display: block;
-        }
-
-        /* Auto Approve View */
-        #auto-approve-view {
-            text-align: center;
-            padding: 40px;
-            background: #ecfdf5;
-            border: 2px solid var(--success);
-            border-radius: 8px;
-            color: #065f46;
-        }
-
-        /* Chat View */
-        .chat-box {
-            background: #e5ddd5;
-            padding: 20px;
-            height: 300px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            border-radius: 8px;
-        }
-
-        .msg {
-            padding: 10px;
-            margin: 5px 0;
-            border-radius: 8px;
-            max-width: 80%;
-            font-size: 14px;
-        }
-
-        .bot {
-            background: white;
-            align-self: flex-start;
-        }
-
-        .user {
-            background: #dcf8c6;
-            align-self: flex-end;
-        }
-
-        .button-container {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            margin-top: 10px;
-        }
-
-        .chat-btn {
-            background: white;
-            border: 1px solid #ccc;
-            padding: 8px;
-            color: #075E54;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        .typing {
-            font-style: italic;
-            color: gray;
-            align-self: flex-start;
-            margin: 5px 0;
-        }
-
-        /* Voice View */
-        #voice-view {
-            padding: 20px;
-            background: #fef2f2;
-            border-radius: 8px;
-            border: 1px solid #fee2e2;
-        }
-
-        .voice-controls {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .voice-btn {
-            padding: 15px 30px;
-            font-size: 16px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            margin: 10px;
-        }
-
-        #connectBtn {
-            background: #4caf50;
-            color: white;
-        }
-
-        #speakBtn {
-            background: #2196f3;
-            color: white;
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        #speakBtn.active {
-            opacity: 1;
-            cursor: pointer;
-        }
-
-        #speakBtn.recording {
-            background: #f44336;
-            animation: pulse 1s infinite;
-        }
-
-        @keyframes pulse {
-
-            0%,
-            100% {
-                transform: scale(1);
-            }
-
-            50% {
-                transform: scale(1.05);
-            }
-        }
-
-        .voice-transcript {
-            background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            padding: 15px;
-            max-height: 400px;
-            overflow-y: auto;
-            margin-top: 15px;
-        }
-
-        .voice-message {
-            padding: 10px;
-            margin: 8px 0;
-            border-radius: 8px;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-
-        .voice-message.bot {
-            background: #e0f2fe;
-            border-left: 3px solid #0284c7;
-        }
-
-        .voice-message.user {
-            background: #dcfce7;
-            border-left: 3px solid #16a34a;
-        }
-
-        .voice-message.system {
-            background: #fef3c7;
-            border-left: 3px solid #f59e0b;
-            font-style: italic;
-            font-size: 13px;
-        }
-
-        .voice-state {
-            display: inline-block;
-            padding: 2px 8px;
-            background: #6b7280;
-            color: white;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: bold;
-            margin-left: 8px;
-        }
-    </style>
+    <title>Meesho RTO Guardian</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
-
     <div class="container">
-        <h1>RTO Guardian - Live Demo</h1>
+        <div class="header">
+            <h1>RTO Guardian</h1>
+            <p>Intelligent AI Agent Orchestrator</p>
+        </div>
 
         <div class="controls">
-            <span style="font-weight:bold; font-size: 14px; margin-right:10px; align-self: center;">Autofill Test
-                Data:</span>
+            <span>Autofill Profile:</span>
             <button class="btn-low" onclick="autofill('low')">Low Risk</button>
             <button class="btn-med" onclick="autofill('medium')">Medium Risk</button>
             <button class="btn-high" onclick="autofill('high')">High Risk</button>
@@ -358,14 +25,15 @@
         <div class="layout">
             <!-- Input Form -->
             <div class="form-panel">
-                <h3 style="margin-top:0;">Order Parameters</h3>
+                <h3>Order Parameters</h3>
                 <div class="form-group">
                     <label>Customer Name</label>
                     <input type="text" id="customer_name" value="Amit Patel">
                 </div>
                 <div class="form-group">
-                    <label>Address</label>
-                    <input type="text" id="address" value="Flat 4B, Sunflower Apts, MG Road, Bangalore, Karnataka - Detailed and accurate">
+                    <label>Delivery Address</label>
+                    <input type="text" id="address"
+                        value="Flat 4B, Sunflower Apts, MG Road, Bangalore, Karnataka - Detailed and accurate">
                 </div>
                 <div class="form-group">
                     <label>Order Value (₹)</label>
@@ -374,8 +42,8 @@
                 <div class="form-group">
                     <label>Payment Mode</label>
                     <select id="payment_mode">
-                        <option value="COD">COD</option>
-                        <option value="PREPAID">PREPAID</option>
+                        <option value="COD">Cash on Delivery (COD)</option>
+                        <option value="PREPAID">Prepaid</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -383,7 +51,7 @@
                     <input type="number" step="0.1" id="user_history_rto_rate" value="0.5">
                 </div>
                 <div class="form-group">
-                    <label>User Total Orders</label>
+                    <label>Total Past Orders</label>
                     <input type="number" id="user_total_orders" value="5">
                 </div>
                 <div class="form-group">
@@ -394,345 +62,68 @@
                     <label>Pincode RTO Rate (0-1)</label>
                     <input type="number" step="0.1" id="pincode_rto_rate" value="0.4">
                 </div>
-                <button class="btn-submit" onclick="processOrder()">Process Order</button>
+                <button class="btn-submit" onclick="processOrder()">Process Order via AI</button>
             </div>
 
             <!-- Result Panel -->
             <div class="result-panel">
-                <div id="progress" class="progress-bar">Waiting for order submission...</div>
+                <div id="progress" class="progress-bar">Ready to score order risk...</div>
 
-                <!-- System logs to prove backend connection -->
                 <pre id="json-debug" class="json-debug"></pre>
 
                 <!-- 1. Auto Approve View -->
                 <div id="auto-approve-view" class="view-section">
-                    <h2>✅ Order Auto-Approved</h2>
-                    <p>The ML model scored this as LOW risk. No agent intervention required.</p>
+                    <h2>✅ Order Approved</h2>
+                    <p>Model scored as LOW risk. Routed to standard fulfillment.</p>
                 </div>
 
                 <!-- 2. WhatsApp Agent View -->
                 <div id="chat-view" class="view-section">
-                    <h3 style="margin-top:0; color:#075E54; text-align:center;">◀ Meesho Order Bot 🟢</h3>
+                    <div class="wa-header">
+                        <div class="wa-avatar">🛍️</div>
+                        <div>Meesho Support<br><span style="font-size:12px; font-weight:400; opacity:0.8;">Online</span>
+                        </div>
+                    </div>
                     <div class="chat-box" id="chat"></div>
+                    <div class="wa-footer">
+                        <div class="wa-input-fake">Type a message...</div>
+                        <div class="wa-mic">🎤</div>
+                    </div>
                 </div>
 
                 <!-- 3. Voice Agent View -->
                 <div id="voice-view" class="view-section">
-                    <h3>🎙️ Voice Call Agent</h3>
-                    <div id="voice-status"
-                        style="margin-bottom: 20px; padding: 15px; font-weight: bold; color: #555; text-align: center; background: #fef3c7; border-radius: 8px;">
-                        Status: Waiting to connect...
+                    <div class="voice-header">
+                        <h3>Secure Voice Gateway</h3>
+                        <div id="voice-status">Tap 🎤 to speak</div>
                     </div>
-                    <div class="voice-controls"
-                        style="text-align: center; margin-bottom: 20px; padding: 20px; background: white; border-radius: 8px; border: 2px solid #e5e7eb;">
-                        <button id="connectBtn" class="voice-btn" onclick="connectVoice()" style="font-size: 18px;">📞
-                            Connect to Call</button>
-                        <button id="speakBtn" class="voice-btn" disabled style="font-size: 18px;">🎤 Click to
-                            Speak</button>
+
+                    <div class="avatar-container">
+                        <div class="avatar-wrapper">
+                            <div class="avatar" id="botAvatar">🤖</div>
+                            <span class="avatar-label">Voice AI</span>
+                        </div>
+                        <div class="avatar-wrapper">
+                            <div class="avatar" id="userAvatar">👤</div>
+                            <span class="avatar-label">Customer</span>
+                        </div>
                     </div>
+
+                    <div class="voice-controls">
+                        <button id="connectBtn" class="v-btn" onclick="connectVoice()" title="Connect Call">📞</button>
+                        <button id="speakBtn" class="v-btn" disabled title="Hold to Speak">🎤</button>
+                    </div>
+
                     <div class="voice-transcript" id="voice-transcript">
-                        <div class="voice-message system">💡 Transcript will appear here once the call starts...</div>
+                        <div class="voice-message system">Secure encrypted channel ready...</div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <script>
-        let currentWs = null;
-        let currentOrderId = null;
-
-        // --- DEPLOYMENT CONFIGURATION ---
-        // For local testing, we force isLocal to true so it uses localhost:8080
-        const isLocal = true; 
-        const RENDER_HOST = "rto-guardian-backend.onrender.com"; 
-
-        const BACKEND_HTTP = isLocal ? "http://localhost:8080" : `https://${RENDER_HOST}`;
-        const BACKEND_WS = isLocal ? "ws://localhost:8080" : `wss://${RENDER_HOST}`;
-
-
-        // Profiles for autofill
-        const profiles = {
-            low: { customer_name: "Amit Patel", address: "Flat 4B, Sunflower Apts, MG Road, Bangalore, Karnataka - Detailed and accurate", user_history_rto_rate: 0.1, user_total_orders: 10, orders_in_last_7days: 1, order_value: 500, pincode_rto_rate: 0.1, payment_mode: "PREPAID" },
-            medium: { customer_name: "Priya Sharma", address: "House no 12, Sector 4, New Delhi", user_history_rto_rate: 0.5, user_total_orders: 5, orders_in_last_7days: 2, order_value: 2000, pincode_rto_rate: 0.4, payment_mode: "COD" },
-            high: { customer_name: "Rahul Kumar", address: "Near temple", user_history_rto_rate: 0.9, user_total_orders: 1, orders_in_last_7days: 5, order_value: 8000, pincode_rto_rate: 0.8, payment_mode: "COD" }
-        };
-
-        function autofill(type) {
-            const p = profiles[type];
-            document.getElementById('customer_name').value = p.customer_name;
-            document.getElementById('address').value = p.address;
-            document.getElementById('user_history_rto_rate').value = p.user_history_rto_rate;
-            document.getElementById('user_total_orders').value = p.user_total_orders;
-            document.getElementById('orders_in_last_7days').value = p.orders_in_last_7days;
-            document.getElementById('order_value').value = p.order_value;
-            document.getElementById('pincode_rto_rate').value = p.pincode_rto_rate;
-            document.getElementById('payment_mode').value = p.payment_mode;
-        }
-
-        function resetViews() {
-            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-            document.getElementById('chat').innerHTML = '';
-            document.getElementById('json-debug').style.display = 'none';
-            if (currentWs) { currentWs.close(); currentWs = null; }
-        }
-
-        function setProgress(msg, color = '#e5e7eb', textColor = 'black') {
-            const p = document.getElementById('progress');
-            p.innerText = msg;
-            p.style.backgroundColor = color;
-            p.style.color = textColor;
-        }
-
-        async function processOrder() {
-            resetViews();
-            currentOrderId = "ORD-" + Math.floor(Math.random() * 10000);
-            setProgress(`Sending request to ML Backend for Order: ${currentOrderId}...`);
-
-            const payload = {
-                order_id: currentOrderId,
-                customer_name: document.getElementById('customer_name').value,
-                phone: "9999999999",
-                address: document.getElementById('address').value,
-                pincode: "110001",
-                user_history_rto_rate: parseFloat(document.getElementById('user_history_rto_rate').value),
-                user_total_orders: parseInt(document.getElementById('user_total_orders').value),
-                orders_in_last_7days: parseInt(document.getElementById('orders_in_last_7days').value),
-                order_value: parseFloat(document.getElementById('order_value').value),
-                pincode_rto_rate: parseFloat(document.getElementById('pincode_rto_rate').value),
-                payment_mode: document.getElementById('payment_mode').value
-            };
-
-            const debugEl = document.getElementById('json-debug');
-            debugEl.style.display = 'block';
-            debugEl.innerText = "// Request to " + BACKEND_HTTP + "/orders/process\n" + JSON.stringify(payload, null, 2);
-
-            try {
-                const res = await fetch(`${BACKEND_HTTP}/orders/process`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(payload)
-                });
-                const data = await res.json();
-
-                debugEl.innerText += "\n\n// Response from Backend ML & Orchestrator\n" + JSON.stringify(data, null, 2);
-                setProgress(`Backend Decision => Risk Score: ${data.risk_score} | Tier: ${data.risk_tier} | Action: ${data.agent_type}`, '#dbeafe', '#1e40af');
-
-                if (data.agent_type === "auto_approve") {
-                    document.getElementById('auto-approve-view').classList.add('active');
-                }
-                else if (data.agent_type === "whatsapp") {
-                    document.getElementById('chat-view').classList.add('active');
-                    startChatAgent();
-                }
-                else if (data.agent_type === "voice_call") {
-                    console.log("✓ Voice agent activated, showing voice view");
-                    const voiceView = document.getElementById('voice-view');
-                    voiceView.classList.add('active');
-                    console.log("Voice view classes:", voiceView.className);
-                    console.log("Voice view display:", window.getComputedStyle(voiceView).display);
-
-                    // Update status immediately
-                    const statusEl = document.getElementById('voice-status');
-                    statusEl.innerText = "Status: Voice agent ready. Click 'Connect to Call' below to start!";
-                    statusEl.style.color = "#16a34a";
-
-                    // Auto-connect to voice call after a short delay
-                    setTimeout(() => {
-                        setProgress('Voice agent activated. Click "Connect to Call" to start...', '#fef2f2', '#991b1b');
-                    }, 500);
-                }
-            } catch (err) {
-                setProgress(`Error: ${err.message}`, '#fee2e2', '#b91c1c');
-                debugEl.innerText += `\n\nERROR: Failed to reach backend. Ensure FastAPI is running on port 8080.`;
-            }
-        }
-
-        // --- CHAT AGENT LOGIC ---
-        function startChatAgent() {
-            const chat = document.getElementById("chat");
-            currentWs = new WebSocket(`${BACKEND_WS}/ws/chat/${currentOrderId}`);
-
-            currentWs.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                const typing = document.getElementById("typing");
-                if (typing) typing.remove();
-
-                if (data.type === "typing") {
-                    chat.innerHTML += `<div id="typing" class="typing">typing...</div>`;
-                } else if (data.error) {
-                    chat.innerHTML += `<div class="msg bot">[System Error: ${data.error}]</div>`;
-                } else if (data.type === "message") {
-                    chat.innerHTML += `<div class="msg bot">${data.text}</div>`;
-                    if (data.buttons) {
-                        let btnHtml = `<div class="button-container" id="btns-${Date.now()}">`;
-                        data.buttons.forEach(b => {
-                            btnHtml += `<button class="chat-btn" onclick="sendChatReply('${b.id}', '${b.label}', this)">${b.label}</button>`;
-                        });
-                        btnHtml += `</div>`;
-                        chat.innerHTML += btnHtml;
-                    }
-                } else if (data.type === "outcome") {
-                    chat.innerHTML += `<div class="msg bot" style="background:#e0f2fe;">[System: Final outcome is ${data.outcome}]</div>`;
-                }
-                chat.scrollTop = chat.scrollHeight;
-            };
-        }
-
-        window.sendChatReply = function (id, label, btnEl) {
-            btnEl.parentElement.remove();
-            document.getElementById("chat").innerHTML += `<div class="msg user">${label}</div>`;
-            if (currentWs) currentWs.send(JSON.stringify({ action: id }));
-        }
-
-        // --- VOICE AGENT LOGIC ---
-        let mediaRecorder;
-        let audioChunks = [];
-        let voiceTranscript = null;
-
-        function addVoiceMessage(type, text, state = null) {
-            if (!voiceTranscript) {
-                voiceTranscript = document.getElementById('voice-transcript');
-                voiceTranscript.innerHTML = ''; // Clear initial message
-            }
-
-            const msgDiv = document.createElement('div');
-            msgDiv.className = `voice-message ${type}`;
-
-            let icon = '';
-            if (type === 'bot') icon = '🤖 Bot: ';
-            else if (type === 'user') icon = '👤 You: ';
-            else if (type === 'system') icon = '📡 System: ';
-
-            msgDiv.innerHTML = icon + text;
-
-            if (state) {
-                const stateSpan = document.createElement('span');
-                stateSpan.className = 'voice-state';
-                stateSpan.textContent = state;
-                msgDiv.appendChild(stateSpan);
-            }
-
-            voiceTranscript.appendChild(msgDiv);
-            voiceTranscript.scrollTop = voiceTranscript.scrollHeight;
-        }
-
-        async function connectVoice() {
-            const statusEl = document.getElementById('voice-status');
-            const connectBtn = document.getElementById('connectBtn');
-            const speakBtn = document.getElementById('speakBtn');
-            voiceTranscript = document.getElementById('voice-transcript');
-
-            statusEl.innerText = "Status: Connecting to voice agent...";
-            addVoiceMessage('system', 'Connecting to voice agent...');
-
-            statusEl.innerText = "Status: Connecting...";
-            currentWs = new WebSocket(`${BACKEND_WS}/ws/voice/${currentOrderId}`);
-            currentWs.binaryType = "blob";
-
-            currentWs.onopen = async () => {
-                statusEl.innerText = "Status: Connected! 📞 Initializing call...";
-                addVoiceMessage('system', 'Call connected! Waiting for agent greeting...');
-                connectBtn.style.display = "none";
-
-                // Request microphone access
-                try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                    mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
-
-                    mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-                    mediaRecorder.onstop = () => {
-                        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                        statusEl.innerText = "Status: Processing your speech... 🧠";
-                        addVoiceMessage('system', 'Processing your speech...');
-                        currentWs.send(audioBlob);
-                        audioChunks = [];
-                    };
-
-                    speakBtn.disabled = false;
-                    speakBtn.classList.add('active');
-                } catch (err) {
-                    addVoiceMessage('system', `⚠️ Microphone access denied: ${err.message}`);
-                    statusEl.innerText = "Status: Microphone access denied";
-                }
-            };
-
-            currentWs.onmessage = async (event) => {
-                // Handle text messages (JSON)
-                if (typeof event.data === 'string') {
-                    const data = JSON.parse(event.data);
-
-                    if (data.type === 'state') {
-                        statusEl.innerText = `Status: ${data.message}`;
-                        if (data.state) {
-                            addVoiceMessage('system', data.message, data.state);
-                        }
-                    } else if (data.type === 'bot_message') {
-                        addVoiceMessage('bot', data.text, data.state);
-                        statusEl.innerText = "Status: Bot is speaking... 🔊";
-                    } else if (data.type === 'user_message') {
-                        addVoiceMessage('user', data.text, data.state);
-                    } else if (data.type === 'call_ended') {
-                        statusEl.innerText = `Status: Call Ended - ${data.outcome}`;
-                        addVoiceMessage('system', `✅ Call ended with outcome: ${data.outcome}`);
-                        if (data.landmark) {
-                            addVoiceMessage('system', `📍 Landmark collected: ${data.landmark}`);
-                        }
-                        speakBtn.disabled = true;
-                        speakBtn.classList.remove('active');
-                        connectBtn.style.display = "inline-block";
-                        connectBtn.innerText = "📞 Reconnect";
-                    } else if (data.type === 'error') {
-                        addVoiceMessage('system', `⚠️ Error: ${data.message}`);
-                        statusEl.innerText = `Status: Error - ${data.message}`;
-                    }
-                }
-                // Handle binary messages (audio)
-                else if (event.data instanceof Blob) {
-                    statusEl.innerText = "Status: Bot is speaking... 🔊";
-                    const audioBlob = event.data;
-                    const audioUrl = URL.createObjectURL(audioBlob);
-                    const audio = new Audio(audioUrl);
-
-                    audio.onended = () => {
-                        statusEl.innerText = "Status: Your turn to speak... 🎤";
-                    };
-                    await audio.play();
-                }
-            };
-
-            currentWs.onerror = (error) => {
-                addVoiceMessage('system', `⚠️ WebSocket error: ${error}`);
-                statusEl.innerText = "Status: Connection error";
-            };
-
-            currentWs.onclose = () => {
-                if (statusEl.innerText.indexOf('Call Ended') === -1) {
-                    statusEl.innerText = "Status: Call Disconnected";
-                    addVoiceMessage('system', 'Call disconnected');
-                }
-                speakBtn.disabled = true;
-                speakBtn.classList.remove('active', 'recording');
-                connectBtn.style.display = "inline-block";
-                connectBtn.innerText = "📞 Reconnect";
-            };
-
-            speakBtn.onclick = () => {
-                if (!mediaRecorder) return;
-                if (mediaRecorder.state === "inactive") {
-                    mediaRecorder.start();
-                    speakBtn.innerText = "🛑 Stop & Send";
-                    speakBtn.classList.add('recording');
-                    statusEl.innerText = "Status: Recording your voice... 🎤";
-                    addVoiceMessage('system', 'Recording your voice...');
-                } else if (mediaRecorder.state === "recording") {
-                    mediaRecorder.stop();
-                    speakBtn.innerText = "🎤 Click to Speak";
-                    speakBtn.classList.remove('recording');
-                }
-            };
-        }
-    </script>
+    <!-- PRESERVED JS LOGIC -->
+    <script src="app.js"></script>
 </body>
 
 </html>

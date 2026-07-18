@@ -90,10 +90,11 @@ def predict_risk(order: OrderInput):
     risk_score = float(model.predict_proba(features_scaled)[0][1])
 
     # 5. Apply Business Logic Thresholds
-    if risk_score < 0.3:
+    # Note: Model probabilities are scaled around a 0.25 mean, so 0.45 is very high risk.
+    if risk_score < 0.25:
         tier, intervention = "LOW", "auto_approve"
         should_approve = True
-    elif risk_score < 0.7:
+    elif risk_score < 0.45:
         tier, intervention = "MEDIUM", "whatsapp_verification"
         should_approve = False
     else:
