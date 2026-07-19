@@ -366,15 +366,6 @@ multipliers = {
 
 ---
 
-## 🎬 Demo
-
-| Resource | Link |
-|:---|:---|
-| 🌐 **Live Demo** | [rto-guardian.vercel.app](https://rto-guardian.vercel.app) |
-| ⚙️ **Backend API** | [rto-guardian-backend.onrender.com/docs](https://rto-guardian-backend.onrender.com/docs) |
-| 🎥 **Video Walkthrough** | *Coming soon* |
-| 📊 **Pitch Deck (PPT)** | *Coming soon* |
-
 ### Quick Demo Walkthrough
 
 1. **Open the live demo** → Select a risk profile (Low / Medium / High)
@@ -504,7 +495,7 @@ uvicorn app.main:app --host 0.0.0.0 --port 8080 --reload
 
 ### 5. Open the Frontend
 
-Open `index.html` in your browser, or visit the [live demo](https://rto-guardian.vercel.app).
+Open `index.html` in your browser, or visit the [live demo]([https://rto-guardian.vercel.app](https://rto-guardian-alpha.vercel.app/)).
 
 ### 6. Test the API directly
 
